@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       if (pageError || !page || page.length === 0) break;
 
       for (const row of page) {
-        const name = (row.artists as { name: string } | null)?.name;
+        const name = (row.artists as unknown as { name: string } | null)?.name;
         if (name) artistSet.add(name);
       }
 

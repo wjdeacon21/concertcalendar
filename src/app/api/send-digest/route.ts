@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         .range(offset, offset + PAGE_SIZE - 1);
       if (!page || page.length === 0) break;
       for (const row of page) {
-        const name = (row.artists as { name: string } | null)?.name;
+        const name = (row.artists as unknown as { name: string } | null)?.name;
         if (name) artistSet.add(name);
       }
       if (page.length < PAGE_SIZE) break;
