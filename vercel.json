@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/ingest-concerts",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/send-digest?mode=weekly",
+      "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/send-digest?mode=daily",
+      "schedule": "0 13 * * *"
+    }
+  ]
+}

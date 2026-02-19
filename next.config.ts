@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      // Spotify profile pictures
+      { protocol: "https", hostname: "i.scdn.co" },
+      // Spotify uses this CDN for some profile images too
+      { protocol: "https", hostname: "platform-lookaside.fbsbx.com" },
+    ],
+  },
 };
 
 export default nextConfig;
