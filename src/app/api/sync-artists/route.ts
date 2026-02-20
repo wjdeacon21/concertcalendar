@@ -60,19 +60,22 @@ async function fetchAllLikedArtists(accessToken: string): Promise<string[]> {
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
-  // Get session + Spotify access token
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // Get session (for Spotify provider token) + verified user
+  const [{ data: { session } }, { data: { user }, error: userError }] = await Promise.all([
+    supabase.auth.getSession(),
+    supabase.auth.getUser(),
+  ]);
 
-  if (sessionError || !session) {
+  if (userError || !user) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const accessToken = session.provider_token;
+  const accessToken = session?.provider_token;
   if (!accessToken) {
     return NextResponse.json({ error: "no_spotify_token" }, { status: 401 });
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
 
   // Fetch all liked song artists from Spotify, refreshing the token once if needed
   let artistNames: string[];
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "unknown";
     if (message === "spotify_unauthorized") {
-      const refreshToken = session.provider_refresh_token;
+      const refreshToken = session?.provider_refresh_token;
       if (!refreshToken) {
         return NextResponse.json({ error: "spotify_token_expired" }, { status: 401 });
       }
@@ -142,10 +145,14 @@ export async function POST(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const matchUrl = new URL("/api/match-concerts", request.url);
-    await fetch(matchUrl.toString(), {
-      method: "POST",
-      headers: { Authorization: `Bearer ${cronSecret}` },
-    });
+    try {
+      await fetch(matchUrl.toString(), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${cronSecret}` },
+      });
+    } catch {
+      // non-fatal: sync succeeded, matching will run on next cron tick
+    }
   }
 
   return NextResponse.json({ count: upsertedArtists.length });
