@@ -4,9 +4,8 @@ import { Resend } from "resend";
 import { buildDigestHtml, buildDigestText, type DigestShow } from "@/lib/email/digestTemplate";
 import { normalizeArtistName } from "@/lib/normalize";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   // Authorization
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
